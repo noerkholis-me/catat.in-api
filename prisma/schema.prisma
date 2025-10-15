@@ -1,0 +1,285 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ============================================
+// Users Table
+// ============================================
+model User {
+  id                String     @id @default(uuid())
+  email             String     @unique                  @db.VarChar(255)
+  password          String                              @db.VarChar(255)
+  fullName          String     @map("full_name")        @db.VarChar(100)
+  avatarUrl         String?    @map("avatar_url")       @db.VarChar(500)
+
+  currency          String     @default("IDR")          @db.VarChar(3)
+  timezone          String     @default("Asia/Jakarta") @db.VarChar(50)
+  notificationEmail Boolean    @default(true)  @map("notification_email")
+  notificationPush  Boolean    @default(true)  @map("notification_push")
+
+  currentStreak     Int        @default(0)     @map("current_streak")
+  longestStreak     Int        @default(0)     @map("longest_streak")
+  lastEntryDate     DateTime?  @map("last_entry_date")  @db.Date
+
+  createdAt         DateTime   @default(now()) @map("created_at")
+  updatedAt         DateTime   @updatedAt      @map("updated_at")
+  deletedAt         DateTime?  @map("deleted_at")
+
+  goals             Goal[]
+  budgets           Budget[]
+  expenses          Expense[]
+  categories        Category[]
+  achievements      Achievement[]
+  emailLogs         EmailLog[]
+  monthlyReports    MonthlyReport[]
+  budgetAlerts      BudgetAlert[]
+
+  @@index([email], map: "idx_users_email")
+  @@map("users")
+}
+
+// ============================================
+// Goals Table
+// ============================================
+model Goal {
+  id           String     @id @default(uuid())
+  userId       String     @map("user_id")
+
+  title        String                           @db.VarChar(200)
+  description  String?                          @db.Text
+  targetAmount Decimal?   @map("target_amount") @db.Decimal(15, 2)
+  targetDate   DateTime?  @map("target_date")   @db.Date
+
+  icon         String?                          @db.VarChar(50)
+  color        String?                          @db.VarChar(7)
+
+  isActive     Boolean    @default(true)  @map("is_active")
+  achievedAt   DateTime?  @map("achieved_at")
+
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt      @map("updated_at")
+  deletedAt    DateTime?  @map("deleted_at")
+
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  budgets      Budget[]
+
+  @@index([userId], map: "idx_goals_user_id")
+  @@index([userId, isActive], map: "idx_goals_active")
+  @@map("goals")
+}
+
+// ============================================
+// Budgets Table
+// ============================================
+model Budget {
+  id                String     @id @default(uuid())
+  userId            String     @map("user_id")
+  goalId            String?    @map("goal_id")
+
+  month             Int
+  year              Int
+
+  totalIncome       Decimal    @map("total_income")                       @db.Decimal(15, 2)
+  needsPercentage   Decimal    @default(50.00) @map("needs_percentage")   @db.Decimal(5, 2)
+  wantsPercentage   Decimal    @default(30.00) @map("wants_percentage")   @db.Decimal(5, 2)
+  savingsPercentage Decimal    @default(20.00) @map("savings_percentage") @db.Decimal(5, 2)
+
+  needsAmount       Decimal    @map("needs_amount")                       @db.Decimal(15, 2)
+  wantsAmount       Decimal    @map("wants_amount")                       @db.Decimal(15, 2)
+  savingsAmount     Decimal    @map("savings_amount")                     @db.Decimal(15, 2)
+
+  dailyBudget       Decimal?   @map("daily_budget")                       @db.Decimal(15, 2)
+  notes             String?                                               @db.Text
+
+  createdAt         DateTime   @default(now())  @map("created_at")
+  updatedAt         DateTime   @updatedAt       @map("updated_at")
+
+  user              User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  goal              Goal?      @relation(fields: [goalId], references: [id], onDelete: SetNull)
+  expenses          Expense[]
+  budgetAlerts      BudgetAlert[]
+  monthlyReports    MonthlyReport[]
+
+  @@unique([userId, month, year])
+  @@index([userId, year, month], map: "idx_budgets_user_period")
+  @@map("budgets")
+}
+
+// ============================================
+// Categories Table
+// ============================================
+model Category {
+  id               String      @id @default(uuid())
+  userId           String?     @map("user_id")
+
+  name             String      @db.VarChar(100)
+  type             String      @db.VarChar(20)
+  icon             String?     @db.VarChar(50)
+  color            String?     @db.VarChar(7)
+
+  isSystem         Boolean     @default(false)  @map("is_system")
+  parentCategoryId String?     @map("parent_category_id")
+
+  createdAt        DateTime    @default(now())  @map("created_at")
+  updatedAt        DateTime    @updatedAt       @map("updated_at")
+  deletedAt        DateTime?   @map("deleted_at")
+
+  user             User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parentCategory   Category?   @relation("CategoryHierarchy", fields: [parentCategoryId], references: [id], onDelete: SetNull)
+  subCategories    Category[]  @relation("CategoryHierarchy")
+  expenses         Expense[]
+
+  @@index([userId], map: "idx_categories_user")
+  @@index([type], map: "idx_categories_type")
+  @@map("categories")
+}
+
+// ============================================
+// Expenses Table
+// ============================================
+model Expense {
+  id              String      @id @default(uuid())
+  userId          String      @map("user_id")
+  budgetId        String?     @map("budget_id")
+  categoryId      String      @map("category_id")
+
+  name            String                             @db.VarChar(200)
+  amount          Decimal                            @db.Decimal(15, 2)
+  quantity        Decimal     @default(1)            @db.Decimal(10, 2)
+  unit            String?                            @db.VarChar(20)
+
+  expenseDate     DateTime    @map("expense_date")   @db.Date
+  expenseTime     String?     @map("expense_time")   @db.VarChar(8)  // "14:30:00"
+
+  notes           String?                            @db.Text
+  location        String?                                 @db.VarChar(255)
+  paymentMethod   String?     @map("payment_method") @db.VarChar(50)
+  receiptUrl      String?     @map("receipt_url")    @db.VarChar(500)
+
+  parentExpenseId String?     @map("parent_expense_id")
+  isGroup         Boolean     @default(false) @map("is_group")
+
+  createdAt       DateTime    @default(now()) @map("created_at")
+  updatedAt       DateTime    @updatedAt      @map("updated_at")
+  deletedAt       DateTime?   @map("deleted_at")
+
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  budget          Budget?     @relation(fields: [budgetId], references: [id], onDelete: SetNull)
+  category        Category    @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  parentExpense   Expense?    @relation("ExpenseHierarchy", fields: [parentExpenseId], references: [id], onDelete: Cascade)
+  childExpenses   Expense[]   @relation("ExpenseHierarchy")
+
+  @@index([userId], map: "idx_expenses_user_id")
+  @@index([expenseDate], map: "idx_expenses_date")
+  @@index([userId, expenseDate], map: "idx_expenses_user_date")
+  @@index([categoryId], map: "idx_expenses_category")
+  @@index([budgetId], map: "idx_expenses_budget")
+  @@index([parentExpenseId], map: "idx_expenses_parent")
+  @@map("expenses")
+}
+
+// ============================================
+// Budget Alerts Table
+// ============================================
+model BudgetAlert {
+  id                  String     @id @default(uuid())
+  budgetId            String     @map("budget_id")
+  userId              String     @map("user_id")
+
+  alertType           String     @map("alert_type")            @db.VarChar(50)
+  thresholdPercentage Decimal    @map("threshold_percentage")  @db.Decimal(5, 2)
+
+  triggeredAt         DateTime?  @map("triggered_at")
+  acknowledgedAt      DateTime?  @map("acknowledged_at")
+
+  createdAt           DateTime   @default(now())  @map("created_at")
+
+  budget              Budget     @relation(fields: [budgetId], references: [id], onDelete: Cascade)
+  user                User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([budgetId], map: "idx_alerts_budget")
+  @@index([userId, triggeredAt], map: "idx_alerts_user")
+  @@map("budget_alerts")
+}
+
+// ============================================
+// Achievements Table (Gamification)
+// ============================================
+model Achievement {
+  id              String     @id @default(uuid())
+  userId          String     @map("user_id")
+
+  achievementType String     @map("achievement_type")  @db.VarChar(50)
+  title           String                               @db.VarChar(100)
+  description     String?                              @db.Text
+  icon            String?                              @db.VarChar(50)
+
+  earnedAt        DateTime   @default(now())  @map("earned_at")
+
+  user            User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, achievementType])
+  @@index([userId], map: "idx_achievements_user")
+  @@map("achievements")
+}
+
+// ============================================
+// Monthly Reports Table
+// ============================================
+model MonthlyReport {
+  id                        String     @id @default(uuid())
+  userId                    String     @map("user_id")
+  budgetId                  String?    @map("budget_id")
+
+  month                     Int
+  year                      Int
+
+  totalExpenses             Decimal    @map("total_expenses")              @db.Decimal(15, 2)
+  totalNeeds                Decimal    @map("total_needs")                 @db.Decimal(15, 2)
+  totalWants                Decimal    @map("total_wants")                 @db.Decimal(15, 2)
+  totalSavings              Decimal    @map("total_savings")               @db.Decimal(15, 2)
+
+  budgetAdherencePercentage Decimal?   @map("budget_adherence_percentage") @db.Decimal(5, 2)
+  vsLastMonthPercentage     Decimal?   @map("vs_last_month_percentage")    @db.Decimal(5, 2)
+
+  topCategoryId             String?    @map("top_category_id")
+  topCategoryAmount         Decimal?   @map("top_category_amount")         @db.Decimal(15, 2)
+
+  pdfUrl                    String?    @map("pdf_url")                     @db.VarChar(500)
+  excelUrl                  String?    @map("excel_url")                   @db.VarChar(500)
+
+  generatedAt               DateTime   @default(now())  @map("generated_at")
+
+  user                      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  budget                    Budget?    @relation(fields: [budgetId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, month, year])
+  @@index([userId, year, month], map: "idx_reports_user_period")
+  @@map("monthly_reports")
+}
+
+// ============================================
+// Email Logs Table
+// ============================================
+model EmailLog {
+  id        String     @id @default(uuid())
+  userId    String     @map("user_id")
+
+  emailType String     @map("email_type")              @db.VarChar(50)
+  subject   String?                                  @db.VarChar(255)
+  status    String     @default("sent")                @db.VarChar(20)
+
+  sentAt    DateTime   @default(now())  @map("sent_at")
+  createdAt DateTime   @default(now())  @map("created_at")
+
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, sentAt], map: "idx_email_logs_user")
+  @@map("email_logs")
+}
