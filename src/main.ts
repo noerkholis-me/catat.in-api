@@ -1,11 +1,13 @@
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
-import { ValidationPipe } from "@nestjs/common";
+import { Logger, ValidationPipe } from "@nestjs/common";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { TransformInterceptor } from "./common/interceptors/transform-interceptor";
 import { AllExceptionFilter } from "./common/filters/http-exception.filter";
 
 async function bootstrap() {
+  const logger = new Logger();
+
   const app = await NestFactory.create(AppModule);
 
   app.setGlobalPrefix("api/v1");
@@ -31,8 +33,6 @@ async function bootstrap() {
     .setTitle("Catat.In API")
     .setDescription("Track dan catat pengeluaran setiap waktu")
     .setVersion("1.0")
-    .addTag("System", "Health dan Statistic check endpoints")
-    .addTag("Auth", "Auth endpoints")
     .addBearerAuth(
       {
         type: "http",
@@ -53,8 +53,8 @@ async function bootstrap() {
   const port = process.env.PORT || 3000;
   await app.listen(port);
 
-  console.log(`🚀 Application is running on: http://localhost:${port}/api/v1`);
-  console.log(`📚 Swagger docs available at: http://localhost:${port}/api/docs`);
+  logger.log(`🚀 Application is running on: http://localhost:${port}/api/v1`);
+  logger.log(`📚 Swagger docs available at: http://localhost:${port}/api/docs`);
 }
 
 bootstrap();

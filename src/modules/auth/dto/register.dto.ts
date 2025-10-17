@@ -16,5 +16,5 @@ export class RegisterDto {
   @IsString()
   @MinLength(2, { message: "Nama minimal 2 karakter" })
   @MaxLength(100, { message: "Nama maksimal 100 karakter" })
-  fullName: string;
+  fullName: string; 
 }

@@ -26,7 +26,13 @@
     "**/dist": true,
     "**/coverage": true
   },
-  "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
   "typescript.tsserver.maxTsServerMemory": 1024,
-  "git.autofetch": false
+  "git.autofetch": false,
+  "docwriter.style": "reST"
 }
