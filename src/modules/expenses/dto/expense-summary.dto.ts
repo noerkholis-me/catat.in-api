@@ -1,4 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { Decimal } from "@prisma/client/runtime/library";
 
 export class TodaySummaryDto {
   @ApiProperty({ description: "Total pengeluaran hari ini" })
@@ -13,7 +14,7 @@ export class TodaySummaryDto {
 
 export class MonthlySummaryDto {
   @ApiProperty({ description: "Total pengeluaran bulan ini" })
-  total: number;
+  total: Decimal;
 
   @ApiProperty({ description: "Jumlah transaksi" })
   count: number;

@@ -16,6 +16,14 @@ import {
   MinLength,
 } from "class-validator";
 
+export enum PaymentMethod {
+  CASH = "cash",
+  DEBIT = "debit",
+  CREDIT = "credit",
+  E_WALLET = "e-wallet",
+  OTHER = "other",
+}
+
 export class CreateExpenseDto {
   @ApiProperty({
     description: "Nama pengeluaran",
@@ -112,7 +120,7 @@ export class CreateExpenseDto {
   @ApiPropertyOptional({
     description: "Metode pembayaran",
     example: "cash",
-    enum: ["cash", "debit", "credit", "e-wallet", "other"],
+    enum: PaymentMethod,
   })
   @IsOptional()
   @IsString()

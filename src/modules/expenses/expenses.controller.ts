@@ -4,6 +4,7 @@ import {
   CreateExpenseDto,
   ExpenseResponseDto,
   ListExpensesResponseDto,
+  MonthlySummaryDto,
   QueryExpenseDto,
   TodaySummaryDto,
   UpdateExpenseDto,
@@ -22,6 +23,7 @@ import {
   ApiBearerAuth,
   ApiOperation,
   ApiParam,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
@@ -71,6 +73,34 @@ export class ExpensesController {
   })
   getTodayTotal(@CurrentUser("id") userId: string) {
     return this.expensesService.getTodayTotal(userId);
+  }
+
+  @Get("monthly/:year/:month")
+  @ApiOperation({ summary: "Get total pengeluaran per bulan" })
+  @ApiParam({ name: "year", example: "2025" })
+  @ApiParam({ name: "month", example: "09" })
+  @ApiResponse({
+    status: 200,
+    description: "Summary bulanan",
+    type: MonthlySummaryDto,
+  })
+  getMonthlyTotal(
+    @CurrentUser("id") userId: string,
+    @Param("year") year: number,
+    @Param("month") month: number,
+  ) {
+    return this.expensesService.getTotalMonth(userId, year, month);
+  }
+
+  @Get("recent")
+  @ApiOperation({ summary: "Get 10 pengeluaran terakhir" })
+  @ApiResponse({
+    status: 200,
+    description: "Recent expenses",
+    type: [ExpenseResponseDto],
+  })
+  getRecentExpenses(@CurrentUser("id") userId: string) {
+    return this.expensesService.getRecentExpenses(userId, 10);
   }
 
   @Get(":id")

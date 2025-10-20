@@ -9,9 +9,11 @@ import {
 import {
   CreateExpenseDto,
   ExpenseResponseDto,
+  MonthlySummaryDto,
   QueryExpenseDto,
   UpdateExpenseDto,
 } from "./dto";
+import { Decimal } from "@prisma/client/runtime/library";
 
 @Injectable()
 export class ExpensesService {
@@ -58,8 +60,7 @@ export class ExpensesService {
   }
 
   async findAll(userId: string, queryExpenseDto: QueryExpenseDto) {
-    const { startDate, endDate, page, limit, budgetId, categoryId } =
-      queryExpenseDto;
+    const { startDate, endDate, page, limit, budgetId, categoryId } = queryExpenseDto;
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
     });
@@ -220,6 +221,49 @@ export class ExpensesService {
       count: result._count,
       date: today.toISOString().split("T")[0],
     };
+  }
+
+  async getTotalMonth(
+    userId: string,
+    year: number,
+    month: number,
+  ): Promise<MonthlySummaryDto> {
+    const startDate = new Date(year, month - 1, 1);
+    const endDate = new Date(year, month, 0, 23, 59, 59);
+
+    const result = await this.prisma.expense.aggregate({
+      where: {
+        userId,
+        expenseDate: {
+          gte: startDate,
+          lte: endDate,
+        },
+        deletedAt: null,
+      },
+      _sum: { amount: true },
+      _count: true,
+    });
+
+    return {
+      total: result._sum.amount || Decimal(0),
+      count: result._count,
+      month,
+      year,
+    };
+  }
+
+  async getRecentExpenses(userId: string, limit: number) {
+    return await this.prisma.expense.findMany({
+      where: {
+        userId,
+        deletedAt: null,
+      },
+      include: {
+        category: true,
+      },
+      orderBy: { expenseDate: "desc" },
+      take: limit,
+    });
   }
 
   private async updateUserStreak(userId: string) {
