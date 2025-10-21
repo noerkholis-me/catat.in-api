@@ -1,11 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { PrismaService } from "@/prisma/prisma.service";
-import {
-  Logger,
-  Injectable,
-  BadRequestException,
-  NotFoundException,
-} from "@nestjs/common";
+import { Logger, Injectable, BadRequestException, NotFoundException } from "@nestjs/common";
 import {
   CreateExpenseDto,
   ExpenseResponseDto,
@@ -198,7 +193,6 @@ export class ExpensesService {
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 2);
 
-    console.log(tomorrow);
     const result = await this.prisma.expense.aggregate({
       where: {
         userId,
@@ -214,8 +208,6 @@ export class ExpensesService {
       _count: true,
     });
 
-    console.log(result);
-
     return {
       total: result._sum.amount || 0,
       count: result._count,
@@ -223,11 +215,7 @@ export class ExpensesService {
     };
   }
 
-  async getTotalMonth(
-    userId: string,
-    year: number,
-    month: number,
-  ): Promise<MonthlySummaryDto> {
+  async getTotalMonth(userId: string, year: number, month: number): Promise<MonthlySummaryDto> {
     const startDate = new Date(year, month - 1, 1);
     const endDate = new Date(year, month, 0, 23, 59, 59);
 
@@ -278,14 +266,11 @@ export class ExpensesService {
       },
     });
     if (!user) return;
-    console.log("User ===> ", user);
 
     const today = new Date();
-    console.log("raw today ===> ", today);
     today.setHours(0, 0, 0, 0);
 
     const lastEntry = user.lastEntryDate ? new Date(user.lastEntryDate) : null;
-    console.log("lastEntry ===> ", lastEntry);
 
     if (!lastEntry) {
       const firstStreak = await this.prisma.user.update({
@@ -298,22 +283,17 @@ export class ExpensesService {
           lastEntryDate: today,
         },
       });
-      console.log("First streak ===> ", firstStreak);
-
       return;
     }
 
     lastEntry.setHours(0, 0, 0, 0);
-    const diffDays = Math.floor(
-      (today.getTime() - lastEntry.getTime()) / (1000 * 60 * 60 * 24),
-    );
+    const diffDays = Math.floor((today.getTime() - lastEntry.getTime()) / (1000 * 60 * 60 * 24));
 
     if (diffDays === 0) return;
 
     if (diffDays === 1) {
       const newStreak = user.currentStreak + 1;
       const newLongestStreak = Math.max(newStreak, user.longestStreak);
-      console.log("newLongestStreak ===> ", newLongestStreak);
 
       await this.prisma.user.update({
         where: {
