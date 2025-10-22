@@ -59,7 +59,7 @@ export class BudgetsService {
   }
 
   async findAll(userId: string) {
-    const budget = await this.prisma.budget.findMany({
+    const budgets = await this.prisma.budget.findMany({
       where: { userId },
       orderBy: [{ year: "desc" }, { month: "desc" }],
       include: {
@@ -73,7 +73,7 @@ export class BudgetsService {
       },
     });
 
-    return budget.map((item) => this.transformBudgetResponse(item));
+    return budgets.map((item) => this.transformBudgetResponse(item));
   }
 
   async getCurrentMonth(userId: string) {
@@ -213,7 +213,6 @@ export class BudgetsService {
     return {
       budget: {
         ...budget,
-        totalIncome: budget.totalIncome,
       },
       spending: {
         totalSpent,

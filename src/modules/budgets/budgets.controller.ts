@@ -109,7 +109,7 @@ export class BudgetsController {
     return this.budgetsService.remove(id, userId);
   }
 
-  @Get("summary/:id")
+  @Get(":id/summary")
   @ApiOperation({ summary: "Get summary pada bulan dan tahun ini" })
   @ApiParam({ name: "id", description: "Budget UUID" })
   @ApiResponse({
