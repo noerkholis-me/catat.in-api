@@ -4,15 +4,21 @@ import { Logger, ValidationPipe } from "@nestjs/common";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { TransformInterceptor } from "./common/interceptors/transform-interceptor";
 import { AllExceptionFilter } from "./common/filters/http-exception.filter";
+import * as cookieParser from "cookie-parser";
 
 async function bootstrap() {
   const logger = new Logger();
 
   const app = await NestFactory.create(AppModule);
 
+  app.use(cookieParser());
+
   app.setGlobalPrefix("api/v1");
 
-  app.enableCors();
+  app.enableCors({
+    origin: "http://localhost:3000",
+    credentials: true,
+  });
 
   app.useGlobalFilters(new AllExceptionFilter());
 
@@ -33,17 +39,7 @@ async function bootstrap() {
     .setTitle("Catat.In API")
     .setDescription("Track dan catat pengeluaran setiap waktu")
     .setVersion("1.0")
-    .addBearerAuth(
-      {
-        type: "http",
-        scheme: "bearer",
-        bearerFormat: "JWT",
-        name: "JWT",
-        description: "Enter JWT token",
-        in: "header",
-      },
-      "JWT-auth",
-    )
+    .addCookieAuth("accessToken")
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

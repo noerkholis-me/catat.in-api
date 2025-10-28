@@ -5,7 +5,7 @@ import { AuthModule } from "./modules/auth/auth.module";
 import { ExpensesModule } from "./modules/expenses/expenses.module";
 import { CategoriesModule } from "./modules/categories/categories.module";
 import { BudgetsModule } from "./modules/budgets/budgets.module";
-import { GoalsModule } from './modules/goals/goals.module';
+import { GoalsModule } from "./modules/goals/goals.module";
 
 @Module({
   imports: [

@@ -10,7 +10,6 @@ import {
 } from "./dto";
 
 @ApiTags("Goals")
-@ApiBearerAuth("JWT-auth")
 @Controller("goals")
 export class GoalsController {
   constructor(private readonly goalsService: GoalsService) {}

@@ -9,16 +9,7 @@ import {
   TodaySummaryDto,
   UpdateExpenseDto,
 } from "./dto";
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Patch,
-  Post,
-  Query,
-} from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from "@nestjs/common";
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -29,7 +20,6 @@ import {
 } from "@nestjs/swagger";
 
 @ApiTags("Expenses")
-@ApiBearerAuth("JWT-auth")
 @Controller("expenses")
 export class ExpensesController {
   constructor(private readonly expensesService: ExpensesService) {}
@@ -43,10 +33,7 @@ export class ExpensesController {
   })
   @ApiResponse({ status: 400, description: "Data tidak valid" })
   @ApiResponse({ status: 401, description: "Unauthorized" })
-  create(
-    @CurrentUser("id") userId: string,
-    @Body() createExpenseDto: CreateExpenseDto,
-  ) {
+  create(@CurrentUser("id") userId: string, @Body() createExpenseDto: CreateExpenseDto) {
     return this.expensesService.create(userId, createExpenseDto);
   }
 
@@ -57,10 +44,7 @@ export class ExpensesController {
     description: "List pengeluaran",
     type: ListExpensesResponseDto,
   })
-  findAll(
-    @CurrentUser("id") userId: string,
-    @Query() queryExpenseDto: QueryExpenseDto,
-  ) {
+  findAll(@CurrentUser("id") userId: string, @Query() queryExpenseDto: QueryExpenseDto) {
     return this.expensesService.findAll(userId, queryExpenseDto);
   }
 

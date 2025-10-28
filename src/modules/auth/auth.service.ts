@@ -37,9 +37,11 @@ export class AuthService {
     });
 
     const accessToken = this.generateToken(user.id, user.email);
+    const refreshToken = this.generateRefreshToken(user.id, user.email);
 
     return {
       accessToken,
+      refreshToken,
       user: {
         id: user.id,
         email: user.email,
@@ -55,21 +57,17 @@ export class AuthService {
     const { email, password } = loginDto;
 
     const user = await this.prisma.user.findUnique({ where: { email, deletedAt: null } });
-
-    if (!user) {
-      throw new UnauthorizedException("Email atau password salah");
-    }
+    if (!user) throw new UnauthorizedException("Email atau password salah");
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
-
-    if (!isPasswordValid) {
-      throw new UnauthorizedException("Email atau password salah");
-    }
+    if (!isPasswordValid) throw new UnauthorizedException("Email atau password salah");
 
     const accessToken = this.generateToken(user.id, user.email);
+    const refreshToken = this.generateRefreshToken(user.id, user.email);
 
     return {
       accessToken,
+      refreshToken,
       user: {
         id: user.id,
         email: user.email,
@@ -79,6 +77,14 @@ export class AuthService {
         longestStreak: user.longestStreak,
       },
     };
+  }
+
+  async refresh(userId: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId, deletedAt: null } });
+    if (!user) throw new UnauthorizedException("User tidak ditemukan");
+
+    const accessToken = this.generateRefreshToken(user.id, user.email);
+    return { accessToken };
   }
 
   async validateUser(userId: string) {
@@ -106,6 +112,12 @@ export class AuthService {
   }
 
   private generateToken(userId: string, email: string): string {
+    const payload = { sub: userId, email };
+
+    return this.jwtService.sign(payload, { secret: process.env.JWT_SECRET, expiresIn: "15m" });
+  }
+
+  private generateRefreshToken(userId: string, email: string): string {
     const payload = { sub: userId, email };
 
     return this.jwtService.sign(payload, { secret: process.env.JWT_SECRET });

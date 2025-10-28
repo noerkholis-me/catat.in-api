@@ -12,7 +12,6 @@ import {
 } from "@nestjs/swagger";
 
 @ApiTags("Budgets")
-@ApiBearerAuth("JWT-auth")
 @Controller("budgets")
 export class BudgetsController {
   constructor(private readonly budgetsService: BudgetsService) {}

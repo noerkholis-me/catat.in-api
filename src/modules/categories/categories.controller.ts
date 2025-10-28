@@ -12,7 +12,6 @@ import { CategoriesService } from "./categories.service";
 import { CategoryResponseDto, CreateCategoryDto, UpdateCategoryDto } from "./dto";
 
 @ApiTags("Categories")
-@ApiBearerAuth("JWT-auth")
 @Controller("categories")
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
@@ -23,10 +22,7 @@ export class CategoriesController {
     status: 201,
     description: "Kategori berhasil dibuat",
   })
-  create(
-    @CurrentUser("id") userId: string,
-    @Body() createCategoryDto: CreateCategoryDto,
-  ) {
+  create(@CurrentUser("id") userId: string, @Body() createCategoryDto: CreateCategoryDto) {
     return this.categoriesService.create(userId, createCategoryDto);
   }
 
