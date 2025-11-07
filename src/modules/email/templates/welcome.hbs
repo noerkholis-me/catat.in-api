@@ -1,0 +1,90 @@
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Selamat Datang di Catat.in!</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #f9f9fb;
+        margin: 0;
+        padding: 0;
+      }
+      .wrapper {
+        max-width: 600px;
+        margin: 30px auto;
+        background: #fff;
+        border-radius: 8px;
+        overflow: hidden;
+      }
+      .header {
+        background: #4f46e5;
+        color: #fff;
+        padding: 30px 20px;
+        text-align: center;
+      }
+      .content {
+        padding: 30px 25px;
+        color: #333;
+        line-height: 1.6;
+      }
+      .btn {
+        display: inline-block;
+        background: #4f46e5;
+        color: #fff;
+        padding: 12px 24px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: bold;
+        margin-top: 20px;
+      }
+      .footer {
+        background: #f1f1f1;
+        padding: 20px;
+        text-align: center;
+        font-size: 12px;
+        color: #777;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrapper">
+      <div class="header">
+        <h1>Selamat Datang, {{fullName}}!</h1>
+      </div>
+
+      <div class="content">
+        <p>Halo <strong>{{fullName}}</strong>,</p>
+
+        <p>Terima kasih sudah bergabung dengan
+          <strong>Catat.in</strong>
+          – aplikasi pencatatan keuangan yang membantu Anda mengatur anggaran, mencapai tujuan, dan
+          tetap on-track setiap hari.</p>
+
+        <h3>Langkah pertama yang bisa Anda lakukan:</h3>
+        <ul>
+          <li>Buat <strong>budget bulanan</strong> pertama Anda.</li>
+          <li>Tambahkan <strong>tujuan keuangan</strong> (misalnya “Liburan ke Bali”).</li>
+          <li>Catat pengeluaran pertama untuk melihat <strong>daily budget</strong> otomatis.</li>
+        </ul>
+
+        <p>
+          <a href="{{appUrl}}/dashboard" class="btn">Buka Dashboard</a>
+        </p>
+
+        <p>Jika ada pertanyaan, tim support kami siap membantu. Cukup balas e-mail ini.</p>
+
+        <p>Sampai jumpa di dalam aplikasi!</p>
+        <p>— Tim Catat.in</p>
+      </div>
+
+      <div class="footer">
+        <p>© {{currentYear}} Catat.in. Semua hak dilindungi.</p>
+        <p>
+          <a href="{{appUrl}}/unsubscribe?token={{unsubscribeToken}}">Berhenti berlangganan</a>
+          |
+          <a href="{{appUrl}}/privacy">Kebijakan Privasi</a>
+        </p>
+      </div>
+    </div>
+  </body>
+</html>

@@ -8,6 +8,7 @@ import { APP_GUARD } from "@nestjs/core";
 import { JwtAuthGuard } from "./guards/jwt-auth.guard";
 import { JwtStrategy } from "./strategies/jwt.strategy";
 import { RefreshJwtStrategy } from "./strategies/refresh-jwt.strategy";
+import { EmailService } from "../email/email.service";
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { RefreshJwtStrategy } from "./strategies/refresh-jwt.strategy";
     AuthService,
     JwtStrategy,
     RefreshJwtStrategy,
+    EmailService,
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,

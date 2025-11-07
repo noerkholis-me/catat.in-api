@@ -31,7 +31,7 @@ export class AuthController {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      maxAge: 1000 * 60 * 15, // 15 mins
+      maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day
     });
 
     response.cookie("refreshToken", refreshToken, {

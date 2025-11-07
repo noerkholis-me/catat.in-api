@@ -3,14 +3,16 @@ import { JwtService } from "@nestjs/jwt";
 import { ConflictException, Injectable, UnauthorizedException } from "@nestjs/common";
 import { RegisterDto } from "./dto/register.dto";
 import { AuthResponseDto } from "./dto/auth-response.dto";
-import * as bcrypt from "bcrypt";
 import { LoginDto } from "./dto/login.dto";
+import { EmailService } from "../email/email.service";
+import * as bcrypt from "bcrypt";
 
 @Injectable()
 export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
+    private emailService: EmailService,
   ) {}
 
   async register(registerDto: RegisterDto): Promise<AuthResponseDto> {
@@ -38,6 +40,12 @@ export class AuthService {
 
     const accessToken = this.generateToken(user.id, user.email);
     const refreshToken = this.generateRefreshToken(user.id, user.email);
+
+    await this.emailService.sendWelcome({
+      id: user.id,
+      fullName: user.fullName,
+      email: user.email,
+    });
 
     return {
       accessToken,
