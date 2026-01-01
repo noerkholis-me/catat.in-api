@@ -5,13 +5,20 @@ import * as fs from "fs";
 
 import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import { InjectQueue } from "@nestjs/bull";
+import { Queue } from "bull";
 
 @Injectable()
 export class EmailService {
   private transporter: nodemailer.Transporter;
   private templates: Record<string, Handlebars.TemplateDelegate> = {};
+  public getNameQueueWelcomeEmail: "welcome";
+  public getNameQueueBudgetAlert: "budget-alert";
 
-  constructor(private configService: ConfigService) {
+  constructor(
+    @InjectQueue("email") private emailQueue: Queue,
+    private configService: ConfigService,
+  ) {
     this.transporter = nodemailer.createTransport({
       host: this.configService.get("SMTP_HOST"),
       port: this.configService.get("SMTP_PORT"),
@@ -28,6 +35,22 @@ export class EmailService {
       const source = fs.readFileSync(path.join(tmplDir, file), "utf-8");
       this.templates[file.replace(".hbs", "")] = Handlebars.compile(source);
     });
+  }
+
+  async queueWelcomeEmail(userId: string) {
+    await this.emailQueue.add(
+      this.getNameQueueWelcomeEmail,
+      { userId },
+      { attempts: 3, backoff: 5000 },
+    );
+  }
+
+  async queueBudgetAlert(alertId: string) {
+    await this.emailQueue.add(
+      this.getNameQueueWelcomeEmail,
+      { alertId },
+      { attempts: 3, backoff: 5000 },
+    );
   }
 
   async sendWelcome(user: { id: string; fullName: string; email: string }) {

@@ -9,9 +9,11 @@ import { JwtAuthGuard } from "./guards/jwt-auth.guard";
 import { JwtStrategy } from "./strategies/jwt.strategy";
 import { RefreshJwtStrategy } from "./strategies/refresh-jwt.strategy";
 import { EmailService } from "../email/email.service";
+import { QueueModule } from "../queue/queue.module";
 
 @Module({
   imports: [
+    QueueModule,
     PassportModule.register({ defaultStrategy: "jwt" }),
     JwtModule.registerAsync({
       imports: [ConfigModule],

@@ -7,6 +7,7 @@ import { CategoriesModule } from "./modules/categories/categories.module";
 import { BudgetsModule } from "./modules/budgets/budgets.module";
 import { GoalsModule } from "./modules/goals/goals.module";
 import { EmailModule } from "./modules/email/email.module";
+import { QueueModule } from "./modules/queue/queue.module";
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { EmailModule } from "./modules/email/email.module";
     BudgetsModule,
     GoalsModule,
     EmailModule,
+    QueueModule,
   ],
 })
 export class AppModule {}

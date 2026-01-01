@@ -41,11 +41,7 @@ export class AuthService {
     const accessToken = this.generateToken(user.id, user.email);
     const refreshToken = this.generateRefreshToken(user.id, user.email);
 
-    await this.emailService.sendWelcome({
-      id: user.id,
-      fullName: user.fullName,
-      email: user.email,
-    });
+    await this.emailService.queueWelcomeEmail(user.id);
 
     return {
       accessToken,
@@ -119,15 +115,21 @@ export class AuthService {
     return this.validateUser(userId);
   }
 
-  private generateToken(userId: string, email: string): string {
+  private async generateToken(userId: string, email: string): Promise<string> {
     const payload = { sub: userId, email };
 
-    return this.jwtService.sign(payload, { secret: process.env.JWT_SECRET, expiresIn: "15m" });
+    return await this.jwtService.signAsync(payload, {
+      secret: process.env.JWT_SECRET,
+      expiresIn: "15m",
+    });
   }
 
-  private generateRefreshToken(userId: string, email: string): string {
+  private async generateRefreshToken(userId: string, email: string): Promise<string> {
     const payload = { sub: userId, email };
 
-    return this.jwtService.sign(payload, { secret: process.env.JWT_SECRET });
+    return await this.jwtService.signAsync(payload, {
+      secret: process.env.JWT_SECRET,
+      expiresIn: "7d",
+    });
   }
 }
