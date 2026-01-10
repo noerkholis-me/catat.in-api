@@ -29,43 +29,52 @@ async function main() {
     { name: "Goal Savings", icon: "🎯", color: "#3b82f6" },
   ];
 
-  for (const category of needsCategories) {
-    await prisma.category.create({
+  await prisma.$transaction(async (tx) => {
+    await tx.user.create({
       data: {
+        fullName: "Nurkholis Majid",
+        email: "nurkholis@example.com",
+        password: "password",
+      },
+    });
+    console.log("✅ Created user");
+
+    await tx.category.createMany({
+      data: needsCategories.map((category) => ({
         ...category,
         type: "needs",
         isSystem: true,
         userId: null,
-      },
+      })),
+      skipDuplicates: true,
     });
-  }
-  console.log("✅ Created NEEDS categories");
 
-  for (const category of wantsCategories) {
-    await prisma.category.create({
-      data: {
+    console.log("✅ Created NEEDS categories");
+
+    await tx.category.createMany({
+      data: wantsCategories.map((category) => ({
         ...category,
         type: "wants",
         isSystem: true,
         userId: null,
-      },
+      })),
+      skipDuplicates: true,
     });
-  }
-  console.log("✅ Created WANTS categories");
+    console.log("✅ Created WANTS categories");
 
-  for (const category of savingsCategories) {
-    await prisma.category.create({
-      data: {
+    await tx.category.createMany({
+      data: savingsCategories.map((category) => ({
         ...category,
         type: "savings",
         isSystem: true,
         userId: null,
-      },
+      })),
+      skipDuplicates: true,
     });
-  }
-  console.log("✅ Created SAVINGS categories");
+    console.log("✅ Created SAVINGS categories");
 
-  console.log("🎉 Seed completed!");
+    console.log("🎉 Seed completed!");
+  });
 }
 
 main()

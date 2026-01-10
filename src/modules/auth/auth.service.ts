@@ -1,6 +1,6 @@
 import { PrismaService } from "@/prisma/prisma.service";
 import { JwtService } from "@nestjs/jwt";
-import { ConflictException, Injectable, UnauthorizedException } from "@nestjs/common";
+import { ConflictException, Injectable, Logger, UnauthorizedException } from "@nestjs/common";
 import { RegisterDto } from "./dto/register.dto";
 import { AuthResponseDto } from "./dto/auth-response.dto";
 import { LoginDto } from "./dto/login.dto";
@@ -9,6 +9,7 @@ import * as bcrypt from "bcrypt";
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
@@ -38,8 +39,8 @@ export class AuthService {
       },
     });
 
-    const accessToken = this.generateToken(user.id, user.email);
-    const refreshToken = this.generateRefreshToken(user.id, user.email);
+    const accessToken = await this.generateToken(user.id, user.email);
+    const refreshToken = await this.generateRefreshToken(user.id, user.email);
 
     await this.emailService.queueWelcomeEmail(user.id);
 
@@ -66,8 +67,8 @@ export class AuthService {
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) throw new UnauthorizedException("Email atau password salah");
 
-    const accessToken = this.generateToken(user.id, user.email);
-    const refreshToken = this.generateRefreshToken(user.id, user.email);
+    const accessToken = await this.generateToken(user.id, user.email);
+    const refreshToken = await this.generateRefreshToken(user.id, user.email);
 
     return {
       accessToken,

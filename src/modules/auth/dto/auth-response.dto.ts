@@ -1,6 +1,6 @@
 export class AuthResponseDto {
-  accessToken: Promise<string>;
-  refreshToken: Promise<string>;
+  accessToken: string;
+  refreshToken: string;
   user: {
     id: string;
     email: string;
